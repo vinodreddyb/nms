@@ -1,0 +1,7 @@
+@CHARSET "ISO-8859-1";
+
+.ui-tabs-nav li a {
+    float: left;
+    padding: 0;
+    text-decoration: none;
+}

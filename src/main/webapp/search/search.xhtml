@@ -1,0 +1,425 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<style>
+.column {
+ text-align: center;
+ width:100%;
+}
+</style>
+	<script>
+		function showPOSearch(id, value) {
+			var parts = id.split(":");
+			var rowKey = parts[parts.length - 3];
+			
+			var txtPoNumId = "[id='tabMain:frmSearchData:tblSearch:"+rowKey+":txtPoNum']";
+			var calPoDateInput = "[id='tabMain:frmSearchData:tblSearch:"+rowKey+":calPoDate_input']";
+			var calPoDate = "[id='tabMain:frmSearchData:tblSearch:"+rowKey+":calPoDate']";
+			var serviceId = "[id='tabMain:frmSearchData:tblSearch:"+rowKey+":service_input']"
+			var serviceTypeId = "[id='tabMain:frmSearchData:tblSearch:"+rowKey+":serviceType']"
+			if (value == "PAID") {
+				$(txtPoNumId).removeAttr("disabled");
+				$(txtPoNumId)
+						.attr(
+								"class",
+								"ui-inputfield ui-inputtext ui-widget "
+										+ "ui-state-default ui-corner-all inputTextWidth");
+			
+				$(calPoDateInput).removeAttr(
+						"disabled");
+				$(calPoDateInput).attr(
+						"aria-disabled", "false");
+				$(calPoDateInput)
+						.attr("class",
+								"ui-inputfield ui-widget ui-state-default ui-corner-all hasDatepicker");
+				$(txtPoNumId).css("visibility","show");
+				$(calPoDate).css("visibility","show");
+				$(calPoDate).attr("required",	"true");
+				$(calPoDate).attr("requiredMessage",	"Please enter PO date");
+			} else {
+				// Disable selecting POC when user selected service either OPDC or HDDC
+				var service = $(serviceId).val();
+				if(service == 'OPDC' || service == 'HDDC') {
+					$(serviceTypeId).find('input:radio[value="PAID"]')
+						.parent().next().trigger('click.selectOneRadio');
+					return;
+				}
+				
+				$(txtPoNumId).attr("disabled", "true");
+				$(txtPoNumId)
+						.attr(
+								"class",
+								"ui-inputfield ui-inputtext ui-widget "
+										+ "ui-state-default ui-corner-all ui-state-disabled inputTextWidth");
+				$(txtPoNumId).val("");
+
+				$(calPoDateInput).attr("disabled",
+						"true");
+				$(calPoDateInput)
+						.attr("class",
+								"ui-inputfield ui-widget ui-state-default ui-corner-all ui-state-disabled");
+				$(calPoDateInput).val("");
+				$(calPoDate).css("visibility","hidden");
+				$(calPoDate).removeAttr("required");
+				$(calPoDate).removeAttr("requiredMessage");
+			}
+
+		}
+		
+		function selectServiceTypeSearch(id, value) {
+			var parts = id.split(":");
+			var rowKey = parts[parts.length - 2];
+			var serviceTypeId = "[id='tabMain:frmSearchData:tblSearch:"+rowKey+":serviceType']"
+		    if(value == 'OPDC' || value == 'HDDC') {
+				$(serviceTypeId).find('input:radio[value="PAID"]').parent().next().trigger('click.selectOneRadio');
+			} else {
+				$(serviceTypeId).find('input:radio[value="POC"]').parent().next().trigger('click.selectOneRadio');
+			} 
+			
+		}
+		function onSearchBy(value) {
+			if(value == "service") {
+				PF('searchService').jq.css("visibility","show");
+				PF('searchService').selectValue("")
+			} else {
+				PF('searchService').jq.css("visibility","hidden");
+				PF('searchService').selectValue("")
+			}
+		}
+	</script>
+	<h:form id="frmSearch">
+		<p:growl id="growlSearch" showDetail="true" />
+		<p:panel style="width: 50%; margin: 0 auto; border:none"
+			id="pnlSearchText" header="Search Panel"  toggleable="true">
+			<p:inputText style="width:400px; height: 20px;" required="true"
+				requiredMessage="Please enter name" tabindex="1" id="txtSearch"  value="#{entryBean.search.searchValue}"/>
+			<p:watermark value="Search" for="txtSearch"  />
+			<p:commandButton value="Submit" id="btnSearch" action="#{entryBean.search}"
+				style="margin-left:10px" onstart="PF('dlgShow').show()"
+				update="tabMain:frmSearchData:pnlSearchTable"
+				oncomplete="PF('dlgShow').hide()" />
+			<p:selectOneMenu id="searchService" widgetVar="searchService" value="#{entryBean.search.searchService}" 
+								 style="width:70px;visibility: hidden"   >
+								 <f:selectItem itemLabel="" itemValue=""/>
+								<f:selectItem itemLabel="PAID" itemValue="PAID"/>
+								<f:selectItem itemLabel="POC" itemValue="POC" />
+								
+			</p:selectOneMenu>
+			<p:selectOneMenu id="status" value="#{entryBean.search.status}">
+								<f:selectItem itemLabel="All" itemValue="2"/>
+								<f:selectItem itemLabel="Active" itemValue="1"/>
+								<f:selectItem itemLabel="InActive" itemValue="0" />
+								
+			</p:selectOneMenu>
+			<p:selectOneRadio value="#{entryBean.search.searchBy}" onchange="onSearchBy(this.value)">
+				<f:selectItem itemLabel="Private IP" itemValue="prip" />
+				<f:selectItem itemLabel="Public IP" itemValue="puip" />
+				<f:selectItem itemLabel="VM" itemValue="vm" />
+				<f:selectItem itemLabel="Customer" itemValue="customer" />
+				<f:selectItem itemLabel="Manager" itemValue="manager" />
+				<f:selectItem itemLabel="service" itemValue="service" />
+				
+				
+			</p:selectOneRadio>
+             
+		</p:panel>
+		</h:form>
+		<h:form id="frmSearchData">
+		<p:growl id="growlEditEntry" showDetail="true" />
+		   
+		<p:panel style="width: 100%; margin: 0 auto; border:none"
+			id="pnlSearchTable" >
+			
+			       <p:commandButton id="toggler" type="button" value="Select Columns"
+						icon="ui-icon-calculator" style="float:right" />
+					<p:columnToggler id="columnTog"
+						datasource="tabMain:frmSearchData:tblSearch" trigger="toggler" />
+					<h:commandLink id="dataExpo" >
+						<h:graphicImage value="/images/excel.png" title="Export to excel" />
+						<p:dataExporter type="xls" target="tblSearch" fileName="report" />
+					</h:commandLink>
+			
+			<br/>
+			<p:dataTable id="tblSearch" var="entry" value="#{entryBean.listEntries}"
+				rowKey="#{entry.id}" rowIndexVar="rowIndex"  rows="50" 
+				paginator="true"  editable="true" 
+				paginatorAlwaysVisible="false"
+				paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				rowsPerPageTemplate="5,10,15">
+				<p:ajax  event="rowEdit"  listener="#{entryBean.onRowEdit}"  onstart="diablePO(#{rowIndex})" 
+					oncomplete="PF('dlgShow').hide()" update="@form:growlEditEntry"/>
+				
+				<p:column style="width:32px" exportable="false">
+					<p:rowEditor />
+				</p:column>
+				<p:column headerText="Organization" width="200" sortBy="#{entry.orgname}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.orgname}"  />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.orgname}" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+					
+				</p:column>
+				<p:column headerText="Contact Name" width="200" sortBy="#{entry.contactName}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.contactName}"  />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.contactName}" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+					
+				</p:column>
+				<p:column headerText="Email" width="200" sortBy="#{entry.email}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.email}"  />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.email}" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+						
+				</p:column>
+				<p:column headerText="Contact Number" width="200" sortBy="#{entry.contactNum}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.contactNum}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.contactNum}" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+						
+				</p:column>
+				<p:column headerText="Location" width="200" sortBy="#{entry.location}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.location}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.location}" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Start Date" width="200" sortBy="#{entry.startDate}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.startDate}">
+								<f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+							</h:outputText>
+						</f:facet>
+						<f:facet name="input">
+							<p:calendar  readonlyInput="true" 
+								pattern="dd/MM/yyyy" size="37" tabindex="6" value="#{entry.startDate}"/>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="End date" width="200" sortBy="#{entry.endDate}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.endDate}">
+								<f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+							</h:outputText>
+						</f:facet>
+						<f:facet name="input">
+							<p:calendar  readonlyInput="true" 
+								pattern="dd/MM/yyyy" size="37" tabindex="6" value="#{entry.endDate}"/>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Shutdown date" width="200" sortBy="#{entry.shutdownDate}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.shutdownDate}">
+								<f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+							</h:outputText>
+						</f:facet>
+						<f:facet name="input">
+							<p:calendar  readonlyInput="true" 
+								pattern="dd/MM/yyyy" size="37" tabindex="6" value="#{entry.shutdownDate}"/>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Private IP" width="200" sortBy="#{entry.privateIp}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.privateIp}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.privateIp}" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Public IP" width="200" sortBy="#{entry.publicIp}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.publicIp}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.publicIp}" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Service" width="200" sortBy="#{entry.service}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.service}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:selectOneMenu id="service" value="#{entry.service}" 
+								onchange="selectServiceTypeSearch(this.id, this.value)" style="width:100%"   >
+								<f:selectItem itemLabel="" itemValue=""/>
+								<f:selectItem itemLabel="ECS" itemValue="ECS" />
+								<f:selectItem itemLabel="IV" itemValue="IV" />
+								<f:selectItem itemLabel="OPDC" itemValue="OPDC" />
+								<f:selectItem itemLabel="HDDC" itemValue="HDDC" />
+							</p:selectOneMenu>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Service Type" width="200" sortBy="#{entry.serviceType}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.serviceType}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:selectOneRadio id="serviceType" onchange="showPOSearch(this.id,this.value)" 	value="#{entry.serviceType}">
+								<f:selectItem itemLabel="POC" itemValue="POC" />
+								<f:selectItem itemLabel="PAID" itemValue="PAID" />
+							</p:selectOneRadio>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="PO Number" width="200" sortBy="#{entry.poNum}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.poNum}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.poNum}" id="txtPoNum" style="width:100%;visibility:#{entry.serviceType eq 'POC'?'hidden':'show'}"    />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column id="colPoDate"  headerText="PO Date" width="200" sortBy="#{entry.poDate}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.poDate}">
+								<f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+							</h:outputText>
+						</f:facet>
+						<f:facet name="input">
+						 	<p:calendar readonlyInput="true" id="calPoDate"    widgetVar="poInput" style="width:100%;visibility:#{entry.serviceType eq 'POC'?'hidden':'show'}" 
+								pattern="dd/MM/yyyy" size="37" tabindex="6" value="#{entry.poDate}"/>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Account Manager" width="200"  sortBy="#{entry.managerName}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.managerName}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:selectOneMenu value="#{entry.accManager}" style="width:100%" id="manager">
+								<f:selectItem itemLabel="" itemValue="" />
+								<f:selectItems var="manager" itemLabel="#{manager.name}"
+									itemValue="#{manager.id}" value="#{entryBean.listManagers}" />
+							</p:selectOneMenu>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="VM name" width="200"  sortBy="#{entry.vmName}" styleClass="column"> 
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.vmName}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.vmName}" style="width:100%"  />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="V Ram" width="200"  sortBy="#{entry.vRam}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.vRam}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.vRam}" style="width:100%"  />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="V CPU" width="200"  sortBy="#{entry.vCpu}" styleClass="column">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.vCpu}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.vCpu}" style="width:100%"  />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="V Hdd" width="200" styleClass="column" sortBy="#{entry.vHdd}">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.vHdd}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.vHdd}" style="width:100%"  />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Os version" width="200" styleClass="column" sortBy="#{entry.osVersion}">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.osVersion}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.osVersion}" style="width:100%"  />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Remarks" width="200" styleClass="column" sortBy="#{entry.remarks}">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.remarks}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText  value="#{entry.remarks}" style="width:100%"  />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Status" width="200" styleClass="column" sortBy="#{entry.status}">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{entry.status  eq 0 ? 'In Active' : 'Active'}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:selectOneMenu  value="#{entry.status}" style="width:100%"   >
+								<f:selectItem itemLabel="Active" itemValue="1"/>
+								<f:selectItem itemLabel="In Active" itemValue="0"/>
+								
+							</p:selectOneMenu>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column style="width:32px" exportable="false">
+					<p:rowEditor />
+				</p:column>
+			</p:dataTable>
+		</p:panel>
+
+
+
+	</h:form>
+
+
+
+</ui:composition>
+

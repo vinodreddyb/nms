@@ -1,0 +1,52 @@
+ALTER TABLE `nmsdb`.`tbl_managers` 
+CHANGE COLUMN `mobile` `mobile` VARCHAR(45) NOT NULL ,
+ADD COLUMN `location` VARCHAR(45) NULL AFTER `email`,
+DROP INDEX `index1` ,
+ADD INDEX `index1` (`name` ASC, `mobile` ASC, `email` ASC, `location` ASC);
+
+
+ALTER TABLE `nmsdb`.`tbl_managers` 
+ADD COLUMN `isActive` BIT NOT NULL AFTER `location`,
+DROP INDEX `index1` ,
+ADD INDEX `index1` (`name` ASC, `mobile` ASC, `email` ASC, `location` ASC, `isActive` ASC);
+
+CREATE TABLE `nmsdb`.`tbl_entry` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `orgname` VARCHAR(45) NULL,
+  `contactname` VARCHAR(45) NULL,
+  `email` VARCHAR(45) NULL,
+  `contactnum` VARCHAR(45) NULL,
+  `location` VARCHAR(45) NULL,
+  `startdate` DATETIME NULL,
+  `enddate` DATETIME NULL,
+  `shutdowndate` DATETIME NULL,
+  `privateip` VARCHAR(45) NULL,
+  `publicip` VARCHAR(45) NULL,
+  `service` VARCHAR(45) NULL,
+  `servicetype` VARCHAR(45) NULL,
+  `ponum` VARCHAR(45) NULL,
+  `podate` DATETIME NULL,
+  `accmanager` VARCHAR(45) NULL,
+  `vmname` VARCHAR(45) NULL,
+  `vmram` VARCHAR(45) NULL,
+  `vcpu` VARCHAR(45) NULL,
+  `vhdd` VARCHAR(45) NULL,
+  `osversion` VARCHAR(45) NULL,
+  `remarks` VARCHAR(45) NULL,
+  `entrydate` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `index_prip` (`privateip` ASC),
+  INDEX `idx_puip` (`publicip` ASC),
+  INDEX `idx_vm` (`vmname` ASC),
+  INDEX `idx_cust` (`contactname` ASC),
+  INDEX `idx_manager` (`accmanager` ASC));
+  
+  ALTER TABLE `nmsdb`.`tbl_entry` 
+CHANGE COLUMN `accmanager` `accmanager` INT NULL DEFAULT NULL ;
+ALTER TABLE `nmsdb`.`tbl_entry` 
+ADD CONSTRAINT `fk_manager`
+  FOREIGN KEY (`accmanager`)
+  REFERENCES `nmsdb`.`tbl_managers` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+  

@@ -1,0 +1,249 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions" >
+
+	<!-- This can be located either in the facelet or in external js file-->
+	<script>
+		function showPO(value) {
+			var service = PF('serviceType').getSelectedValue();
+			if (service == "") {
+				PF('payType').jq.find('input:radio[value="POC"]').parent()
+						.next().trigger('click.selectOneRadio');
+				return;
+			}
+			if (value == "PAID") {
+				PF('txtPoNum').jq.removeAttr("disabled");
+				PF('txtPoNum').jq
+						.attr(
+								"class",
+								"ui-inputfield ui-inputtext ui-widget "
+										+ "ui-state-default ui-corner-all inputTextWidth");
+				$("[id='tabMain:frmData:calPoDate_input']").removeAttr(
+						"disabled");
+				$("[id='tabMain:frmData:calPoDate_input']").attr(
+						"aria-disabled", "false");
+				$("[id='tabMain:frmData:calPoDate_input']")
+						.attr("class",
+								"ui-inputfield ui-widget ui-state-default ui-corner-all hasDatepicker");
+				$("[id='tabMain:frmData:calPoDate']").attr("required", "true");
+				$("[id='tabMain:frmData:calPoDate']").attr("requiredMessage",
+						"Please enter PO date");
+				
+				$("[id='tabMain:frmData:calEndDate_input']").val(null);
+			} else {
+				// Disable selecting POC when user selected service either OPDC or HDDC
+
+				if (service == 'OPDC' || service == 'HDDC') {
+					PF('payType').jq.find('input:radio[value="PAID"]').parent()
+							.next().trigger('click.selectOneRadio');
+					return;
+				}
+
+				PF('txtPoNum').jq.attr("disabled", "true");
+				PF('txtPoNum').jq
+						.attr(
+								"class",
+								"ui-inputfield ui-inputtext ui-widget "
+										+ "ui-state-default ui-corner-all ui-state-disabled inputTextWidth");
+				PF('txtPoNum').jq.val("");
+
+				$("[id='tabMain:frmData:calPoDate_input']").attr("disabled",
+						"true");
+				$("[id='tabMain:frmData:calPoDate_input']")
+						.attr("class",
+								"ui-inputfield ui-widget ui-state-default ui-corner-all ui-state-disabled");
+				$("[id='tabMain:frmData:calPoDate_input']").val("");
+				$("[id='tabMain:frmData:calPoDate']").removeAttr("required");
+				$("[id='tabMain:frmData:calPoDate']").removeAttr(
+						"requiredMessage");
+				
+			}
+
+		}
+		function diablePO() {
+			PF('txtPoNum').jq.attr("disabled", "true");
+			$("[id='tabMain:frmData:calPoDate_input']")
+					.attr("disabled", "true");
+			$("[id='tabMain:frmData:calPoDate_input']")
+					.attr("class",
+							"ui-inputfield ui-widget ui-state-default ui-corner-all ui-state-disabled");
+		}
+		function selectServiceType(value) {
+			if (value == 'OPDC' || value == 'HDDC') {
+				PF('payType').jq.find('input:radio[value="PAID"]').parent()
+						.next().trigger('click.selectOneRadio');
+			} else {
+				PF('payType').jq.find('input:radio[value="POC"]').parent()
+						.next().trigger('click.selectOneRadio');
+			}
+
+		}
+		$(document).ready(function() {
+			loadManagersData();
+			diablePO();
+		});
+	</script>
+
+	<h:form id="frmData">
+		<p:messages id="messages" showDetail="true" autoUpdate="true"
+			closable="true" />
+		<p:remoteCommand id="rc" name="loadManagersData" process="@this"
+			actionListener="#{entryBean.loadAllManagers}"
+			update="@form:accountManager" />
+		<div style="width: 100%">
+			<p:panelGrid id="pnlData" columns="4"
+				style="width: 80%;border:none;margin: 0 auto">
+				<h:outputText value="Organisation Name" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="1"
+					value="#{entryBean.entry.orgname}" required="true"  requiredMessage="Please enter org name."/>
+				<h:outputText value="Type Of Service" styleClass="inputTextWidth" />
+				<p:panel style="border:none">
+					<p:selectOneMenu id="selectManagers" style="width:100px;float:left"
+						widgetVar="serviceType" tabindex="11"
+						value="#{entryBean.entry.service}"
+						onchange="selectServiceType(this.value)">
+						<f:selectItem itemLabel="" itemValue="" noSelectionOption="true" />
+						<f:selectItem itemLabel="ECS" itemValue="ECS" />
+						<f:selectItem itemLabel="IV" itemValue="IV" />
+						<f:selectItem itemLabel="OPDC" itemValue="OPDC" />
+						<f:selectItem itemLabel="HDDC" itemValue="HDDC" />
+					</p:selectOneMenu>
+					<p:selectOneRadio id="serviceType" style="width:120px;float:left"
+						widgetVar="payType" onchange="showPO(this.value)" tabindex="12"
+						value="#{entryBean.entry.serviceType}">
+						<f:selectItem itemLabel="POC" itemValue="POC" />
+						<f:selectItem itemLabel="PAID" itemValue="PAID" />
+
+					</p:selectOneRadio>
+
+				</p:panel>
+
+				<h:outputText value="Contact Name" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth"
+					value="#{entryBean.entry.contactName}" tabindex="2" />
+
+				<p:outputLabel value="PO Number" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" widgetVar="txtPoNum"
+					tabindex="13" value="#{entryBean.entry.poNum}"></p:inputText>
+
+				<h:outputText value="Email" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="3"
+					value="#{entryBean.entry.email}">
+					
+				</p:inputText>
+
+				<h:outputText value="PO Date" styleClass="inputTextWidth" />
+				<p:calendar size="37"  id="calPoDate" readonlyInput="true"
+					pattern="dd/MM/yyyy" tabindex="14" 
+					value="#{entryBean.entry.poDate}" />
+				<h:outputText value="Contact No" styleClass="inputTextWidth" />
+				
+				<p:inputMask  maxlength="15"
+					styleClass="inputTextWidth" tabindex="4"
+					value="#{entryBean.entry.contactNum}">
+					 <pe:keyFilter regEx="/[\d]/" />
+				</p:inputMask>
+
+				<h:outputText value="Account Manager" styleClass="inputTextWidth" />
+				
+				<p:selectOneMenu id="accountManager" style="width:200px;float:left"
+					widgetVar="accountManager" tabindex="15"
+					value="#{entryBean.entry.accManager}">
+					<f:selectItem itemLabel="" itemValue="0" />
+					<f:selectItems var="manager" itemLabel="#{manager.name}"
+						itemValue="#{manager.id}" value="#{entryBean.listManagers}" />
+				</p:selectOneMenu>
+				
+				
+				
+
+
+				<h:outputText value="Location" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="5"
+					value="#{entryBean.entry.location}"  />
+
+				<h:outputText value="Vm Name" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="16"
+					value="#{entryBean.entry.vmName}"  />
+
+				<h:outputText value="Start Date" styleClass="inputTextWidth" />
+				<p:calendar id="calStartDate" readonlyInput="true"  pattern="dd/MM/yyyy"
+					size="37" tabindex="6" value="#{entryBean.entry.startDate}" maxdate="#{entryBean.entry.endDate}">
+					<p:ajax event="dateSelect" update="calEndDate"></p:ajax>
+					<p:ajax event="change" update="calEndDate"></p:ajax>
+				</p:calendar>
+				<h:outputText value="Vram" styleClass="inputTextWidth" />
+				<p:inputText  styleClass="inputTextWidth" tabindex="17"
+					value="#{entryBean.entry.vRam}"  />
+
+				<h:outputText value="End Date" styleClass="inputTextWidth" />
+				<p:calendar id="calEndDate" readonlyInput="true"
+					pattern="dd/MM/yyyy" size="37" tabindex="7" mindate="#{entryBean.entry.startDate}"
+					value="#{entryBean.entry.endDate}">
+					<p:ajax event="dateSelect" update="calStartDate,calShutDate"></p:ajax>
+					<p:ajax event="change" update="calStartDate,calShutDate"></p:ajax>
+				</p:calendar>
+				<h:outputText value="Vcpu" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="18"
+					value="#{entryBean.entry.vCpu}"  />
+
+				<h:outputText value="Shut Down date" styleClass="inputTextWidth" />
+				<p:calendar id="calShutDate" readonlyInput="true" 
+					 pattern="dd/MM/yyyy" mindate="#{entryBean.entry.endDate}"
+					size="37" tabindex="8" value="#{entryBean.entry.shutdownDate}">
+					<p:ajax event="dateSelect" update="calEndDate"></p:ajax>
+					<p:ajax event="change" update="calEndDate"></p:ajax>
+				</p:calendar>
+
+
+
+				<h:outputText value="VHdd" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="19"
+					value="#{entryBean.entry.vHdd}" />
+
+				<h:outputText value="Private Ip" styleClass="inputTextWidth" />
+				<p:inputText id="txtPrivIp" styleClass="inputTextWidth" tabindex="9"
+					value="#{entryBean.entry.privateIp}"
+					
+					validatorMessage="Invalid private IP address">
+					<f:validateRegex
+						pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+						for="txtPrivIp" />
+				</p:inputText>
+
+				<h:outputText value="Os Version" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="20"
+					value="#{entryBean.entry.osVersion}"  />
+
+				<h:outputText value="Public IP" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" id="txtPubIp" tabindex="10"
+					value="#{entryBean.entry.publicIp}"
+					validatorMessage="Invalid public IP address">
+					<f:validateRegex
+						pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+						for="txtPubIp" />
+				</p:inputText>
+
+				<h:outputText value="Remarks" styleClass="inputTextWidth" />
+				<p:inputTextarea styleClass="inputTextWidth" tabindex="21"
+					value="#{entryBean.entry.remarks}"  />
+
+			</p:panelGrid>
+
+			<p:panelGrid columns="2"
+				style="width: 10%; margin:0 auto; margin-top: 20px">
+				<p:commandButton value="Submit" onstart="PF('dlgShow').show()"
+					oncomplete="PF('dlgShow').hide(),diablePO()"
+					action="#{entryBean.save}" update="tabMain:frmData:pnlData" />
+				<p:commandButton value="Reset" process="@this"
+					action="#{entryBean.reset}" update="tabMain:frmData:pnlData"
+					oncomplete="diablePO()" />
+
+			</p:panelGrid>
+		</div>
+	</h:form>
+
+</ui:composition>

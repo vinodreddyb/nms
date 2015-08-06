@@ -1,0 +1,88 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+	<p:fieldset legend="Manager Details" id="managerFields">
+		<h:form id="frmManagers">
+			<p:growl id="growlManager" showDetail="true" />
+			<p:panelGrid columns="8" style="width: 80%;0 auto;border:none"
+				id="pnlManager">
+				<h:outputText value="Name" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" required="true"
+					requiredMessage="Please enter name"
+					value="#{managerBean.manager.name}" tabindex="1" />
+
+				<h:outputText value="Contact" styleClass="inputTextWidth" />
+				<p:inputMask styleClass="inputTextWidth" maxlength="15" required="true"
+					requiredMessage="Please enter Contact"
+					value="#{managerBean.manager.mobile}" tabindex="2">
+					<pe:keyFilter regEx="/[\d]/" />
+				</p:inputMask>
+
+
+				<h:outputText value="Email" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="3"
+					required="true" requiredMessage="Please enter your email address."
+					value="#{managerBean.manager.email}">
+				</p:inputText>
+
+
+				<h:outputText value="Location" styleClass="inputTextWidth" />
+				<p:inputText styleClass="inputTextWidth" tabindex="4"
+					required="true" requiredMessage="Please enter location"
+					value="#{managerBean.manager.location}" />
+
+
+			</p:panelGrid>
+			<p:panel style="border:none;">
+				<p:commandButton value="Submit" id="btnSaveManager"
+					onstart="PF('dlgShow').show()" update="growlManager"
+					oncomplete="PF('dlgShow').hide(),PF('pnlTblManagers').toggle()"
+					action="#{managerBean.saveManager}" />
+				<p:commandButton value="Reset" />
+
+			</p:panel>
+		</h:form>
+		<h:form id="frmManagersView">
+			<p:growl id="growlManager" showDetail="true" />
+			<p:panel toggleable="true" widgetVar="pnlTblManagers"
+				collapsed="true" header="Managers" toggleOrientation="horizontal">
+				<p:ajax event="toggle" listener="#{managerBean.onToggle}"
+					update="tabMain:frmManagers:pnlManager,@form"
+					onstart="PF('dlgShow').show()" oncomplete="PF('dlgShow').hide()" />
+				<p:dataTable var="manager" value="#{managerBean.listManagers}"
+					selectionMode="single" rowKey="#{manager.id}" rows="10"
+					paginator="true" paginatorPosition="bottom"
+					paginatorAlwaysVisible="false"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+
+					<p:ajax event="rowSelect" listener="#{managerBean.onRowSelect}"
+						update="tabMain:managerFields" />
+					<p:column headerText="Name">
+						<h:outputText value="#{manager.name}" />
+					</p:column>
+
+					<p:column headerText="Contact">
+						<h:outputText value="#{manager.mobile}" />
+					</p:column>
+
+					<p:column headerText="Email">
+						<h:outputText value="#{manager.email}" />
+					</p:column>
+					<p:column headerText="location">
+						<h:outputText value="#{manager.location}" />
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+
+		</h:form>
+	</p:fieldset>
+
+
+</ui:composition>
+
