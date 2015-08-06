@@ -2,12 +2,15 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:p="http://primefaces.org/ui" template="/template/layout.xhtml">
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:sec="http://www.springframework.org/security/tags"
+	template="/template/layout.xhtml">
 	<ui:define name="content">
 		
-	<p:tabView id="tabMain" dynamic="true" onTabChange=""
+	<p:tabView id="tabMain" 
 			style="width:99%; margin:0 auto;min-height: 98%;height: auto;"  >
-			 <p:ajax event="tabChange" listener="#{entryBean.onTabChange}" update="tabMain:frmData:pnlData,tabMain:frmSearchData:pnlSearchTable"/>
+			 <p:ajax event="tabChange" listener="#{entryBean.onTabChange}" update="tabMain:frmData:pnlData,tabMain:frmSearchData:tblSearch"/>
+			
 			 <p:tab title="Data" id="tabData">
 				<ui:include src="entry/entry.xhtml" />
 			 </p:tab>
@@ -15,9 +18,11 @@
 			<p:tab title="search">
 				<ui:include src="search/search.xhtml" />
 			</p:tab>
+			<sec:authorize access="hasAnyRole('ROLE_ADMIN')">
 			<p:tab title="Admin">
 				<ui:include src="admin/managerdetails.xhtml" />
 			</p:tab>
+			</sec:authorize>
 		</p:tabView>
 		<p:dialog header="Progress" widgetVar="dlgShow" modal="true"
 			 height="100" width="300"

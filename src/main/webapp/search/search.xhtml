@@ -129,20 +129,22 @@
 		</h:form>
 		<h:form id="frmSearchData">
 		<p:growl id="growlEditEntry" showDetail="true" />
-		   
+		            
+					
 		<p:panel style="width: 100%; margin: 0 auto; border:none"
 			id="pnlSearchTable" >
 			
-			       <p:commandButton id="toggler" type="button" value="Select Columns"
-						icon="ui-icon-calculator" style="float:right" />
-					<p:columnToggler id="columnTog"
-						datasource="tabMain:frmSearchData:tblSearch" trigger="toggler" />
-					<h:commandLink id="dataExpo" >
-						<h:graphicImage value="/images/excel.png" title="Export to excel" />
-						<p:dataExporter type="xls" target="tblSearch" fileName="report" />
-					</h:commandLink>
+			<p:panel style="padding:none;border:none;" >
+			<h:commandLink id="dataExpo">
+				<h:graphicImage value="/images/excel.png" title="Export to excel" />
+				<p:dataExporter type="xls" target="tblSearch" fileName="report" />
+			</h:commandLink>
+				<p:commandButton id="toggler" type="button" value="Select Columns"
+				icon="ui-icon-calculator"  />
+			    <p:columnToggler  id="columnTog"
+				datasource="tabMain:frmSearchData:tblSearch" trigger="toggler" />
+			</p:panel>
 			
-			<br/>
 			<p:dataTable id="tblSearch" var="entry" value="#{entryBean.listEntries}"
 				rowKey="#{entry.id}" rowIndexVar="rowIndex"  rows="50" 
 				paginator="true"  editable="true" 

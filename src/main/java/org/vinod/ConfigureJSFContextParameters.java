@@ -25,6 +25,6 @@ public class ConfigureJSFContextParameters implements ServletContextInitializer 
                 "javax.faces.FACELETS_REFRESH_PERIOD", "1");
         servletContext.setInitParameter("primefaces.CLIENT_SIDE_VALIDATION", "true");
         servletContext.setInitParameter("primefaces.THEME", "bluesky");
-
+        servletContext.setInitParameter("javax.faces.FACELETS_LIBRARIES", "/WEB-INF/springsecurity.taglib.xml");
     }
 }
